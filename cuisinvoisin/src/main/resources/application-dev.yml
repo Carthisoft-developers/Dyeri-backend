@@ -1,0 +1,37 @@
+# src/main/resources/application-dev.yml — local development overrides
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cuisinvoisin
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000ms
+
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  jwt:
+    secret: dev-secret-key-must-be-at-least-32-chars-long-for-hs256
+
+logging:
+  level:
+    com.cuisinvoisin: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
