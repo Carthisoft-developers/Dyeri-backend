@@ -1,0 +1,78 @@
+# core-service/src/main/resources/application.yml
+server:
+  port: 8081
+
+spring:
+  application:
+    name: core-service
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:dyeri}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+  # Flyway uses JDBC for schema migrations
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:dyeri}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    locations: classpath:db/migration
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.auth-server-url:http://localhost:8180}/realms/${keycloak.realm:dyeri}
+          jwk-set-uri: ${keycloak.auth-server-url:http://localhost:8180}/realms/${keycloak.realm:dyeri}/protocol/openid-connect/certs
+
+keycloak:
+  auth-server-url: ${KEYCLOAK_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:dyeri}
+  admin-client-id: ${KEYCLOAK_ADMIN_CLIENT:admin-cli}
+  admin-client-secret: ${KEYCLOAK_ADMIN_SECRET:}
+
+app:
+  storage:
+    upload-dir: ${UPLOAD_DIR:uploads}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      keycloak:
+        slidingWindowSize: 10
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

@@ -1,0 +1,121 @@
+{
+  "realm": "dyeri",
+  "enabled": true,
+  "displayName": "Dyeri Platform",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "CLIENT",
+        "description": "Home-cooked meal client"
+      },
+      {
+        "name": "COOK",
+        "description": "Home cook"
+      },
+      {
+        "name": "DELIVERY",
+        "description": "Delivery driver"
+      },
+      {
+        "name": "ADMIN",
+        "description": "Platform administrator"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "api-gateway",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "secret": "${KEYCLOAK_CLIENT_SECRET}",
+      "redirectUris": [
+        "http://localhost:8080/*",
+        "https://dyeri.tn/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8080",
+        "https://dyeri.tn"
+      ]
+    },
+    {
+      "clientId": "swagger-ui",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:8080/*",
+        "http://localhost:8081/*",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8080",
+        "http://localhost:8081",
+        "http://localhost:3000"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "client@test.com",
+      "email": "client@test.com",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "CLIENT"
+      ]
+    },
+    {
+      "username": "cook@test.com",
+      "email": "cook@test.com",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "COOK"
+      ]
+    },
+    {
+      "username": "delivery@test.com",
+      "email": "delivery@test.com",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "password",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "DELIVERY"
+      ]
+    }
+  ],
+  "accessTokenLifespan": 900,
+  "ssoSessionMaxLifespan": 604800
+}

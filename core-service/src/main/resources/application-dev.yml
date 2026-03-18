@@ -1,0 +1,26 @@
+# core-service/src/main/resources/application-dev.yml
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/dyeri
+    username: postgres
+    password: postgres
+  flyway:
+    url: jdbc:postgresql://localhost:5432/dyeri
+    user: postgres
+    password: postgres
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+
+keycloak:
+  auth-server-url: http://localhost:8180
+  realm: dyeri
+
+logging:
+  level:
+    com.dyeri: DEBUG
+    org.springframework.r2dbc: DEBUG
+    org.springframework.security: DEBUG
