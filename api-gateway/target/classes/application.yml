@@ -1,0 +1,281 @@
+# api-gateway/src/main/resources/application.yml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: ["http://localhost:3000", "https://dyeri.tn"]
+            allowedMethods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]
+            allowedHeaders: ["*"]
+            allowCredentials: true
+
+      routes:
+        # ── Auth (rate: 5 req/s per IP, no JWT required) ────────────────────
+        - id: auth-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                redis-rate-limiter.burstCapacity: 10
+                redis-rate-limiter.requestedTokens: 1
+                key-resolver: "#{@ipKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        # ── Core service routes ───────────────────────────────────────────────
+        - id: users-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/users/**
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: cooks-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/cooks/**
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: dishes-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/dishes/**
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 100
+                redis-rate-limiter.burstCapacity: 200
+                key-resolver: "#{@ipKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: categories-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/categories/**
+          filters:
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: cart-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/cart/**
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 50
+                redis-rate-limiter.burstCapacity: 100
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: orders-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/orders/**
+          filters:
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: delivery-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/delivery/**
+          filters:
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: reviews-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/reviews/**
+          filters:
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: search-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/search/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        - id: favorites-follows-route
+          uri: lb://core-service
+          predicates:
+            - Path=/api/v1/favorites/**,/api/v1/follows/**,/api/v1/addresses/**
+          filters:
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: core-service
+                fallbackUri: forward:/fallback/core
+
+        # ── Notification service ─────────────────────────────────────────────
+        - id: notifications-route
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+          filters:
+            - TokenRelay=
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 30
+                redis-rate-limiter.burstCapacity: 60
+                key-resolver: "#{@userKeyResolver}"
+            - name: CircuitBreaker
+              args:
+                name: notification-service
+                fallbackUri: forward:/fallback/notification
+
+        # ── Payment service ──────────────────────────────────────────────────
+        - id: payments-route
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**,/api/v1/payouts/**
+          filters:
+            - TokenRelay=
+            - name: CircuitBreaker
+              args:
+                name: payment-service
+                fallbackUri: forward:/fallback/payment
+
+        - id: webhooks-route
+          uri: lb://payment-service
+          predicates:
+            - Path=/webhooks/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: payment-service
+                fallbackUri: forward:/fallback/payment
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:dyeri}
+          jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:dyeri}/protocol/openid-connect/certs
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+
+# ── Load Balancer ─────────────────────────────────────────────────────────────
+spring.cloud.loadbalancer:
+  retry:
+    enabled: true
+    max-retries-on-same-service-instance: 0
+    max-retries-on-next-service-instance: 2
+
+# ── Circuit Breakers ──────────────────────────────────────────────────────────
+resilience4j:
+  circuitbreaker:
+    instances:
+      core-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 80
+        slowCallDurationThreshold: 2s
+        eventConsumerBufferSize: 10
+      notification-service:
+        slidingWindowSize: 10
+        failureRateThreshold: 60
+        waitDurationInOpenState: 15s
+        minimumNumberOfCalls: 5
+      payment-service:
+        slidingWindowSize: 10
+        failureRateThreshold: 40
+        waitDurationInOpenState: 20s
+        slowCallDurationThreshold: 3s
+        minimumNumberOfCalls: 5
+  retry:
+    instances:
+      core-service:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+  bulkhead:
+    instances:
+      core-service:
+        maxConcurrentCalls: 50
+        maxWaitDuration: 1s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.dyeri.gateway: DEBUG

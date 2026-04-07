@@ -1,0 +1,6 @@
+/workspace/shared-events/src/main/java/com/dyeri/events/KafkaTopics.java
+/workspace/shared-events/src/main/java/com/dyeri/events/OrderPlacedEvent.java
+/workspace/shared-events/src/main/java/com/dyeri/events/OrderStatusChangedEvent.java
+/workspace/shared-events/src/main/java/com/dyeri/events/PaymentConfirmedEvent.java
+/workspace/shared-events/src/main/java/com/dyeri/events/PaymentFailedEvent.java
+/workspace/shared-events/src/main/java/com/dyeri/events/SendNotificationCommand.java

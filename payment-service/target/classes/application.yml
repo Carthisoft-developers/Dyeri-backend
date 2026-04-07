@@ -1,0 +1,25 @@
+server:
+  port: 8083
+spring:
+  application:
+    name: payment-service
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:dyeri}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/${DB_NAME:dyeri}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    locations: classpath:db/migration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}

@@ -3,7 +3,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent><groupId>com.dyeri</groupId><artifactId>dyeri-platform</artifactId><version>1.0.0-SNAPSHOT</version></parent>
-  <artifactId>notification-service</artifactId><n>Dyeri Notification Service</n>
+  <artifactId>notification-service</artifactId><name>Dyeri Notification Service</name>
   <dependencies>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webflux</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-r2dbc</artifactId></dependency>

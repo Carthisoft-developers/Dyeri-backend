@@ -10,7 +10,7 @@
     <version>1.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>core-service</artifactId>
-  <n>Dyeri Core Service</n>
+  <name>Dyeri Core Service</name>
 
   <dependencies>
     <!-- WebFlux (NO spring-boot-starter-web) -->

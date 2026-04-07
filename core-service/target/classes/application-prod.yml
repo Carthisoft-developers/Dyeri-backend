@@ -1,0 +1,26 @@
+# core-service/src/main/resources/application-prod.yml
+spring:
+  r2dbc:
+    url: ${R2DBC_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  flyway:
+    url: ${JDBC_URL}
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+
+logging:
+  level:
+    root: WARN
+    com.dyeri: INFO
+  pattern:
+    console: '{"timestamp":"%d","level":"%level","traceId":"%X{traceId}","logger":"%logger{36}","msg":"%msg"}%n'

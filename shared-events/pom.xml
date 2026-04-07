@@ -11,7 +11,7 @@
   </parent>
   <artifactId>shared-events</artifactId>
   <packaging>jar</packaging>
-  <n>Dyeri Shared Events</n>
+  <name>Dyeri Shared Events</name>
   <dependencies>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

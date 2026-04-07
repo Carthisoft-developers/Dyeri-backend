@@ -3,11 +3,14 @@ import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import reactor.core.publisher.Mono;
 @Configuration
 public class RateLimitConfig {
     @Bean
+    @Primary
     public KeyResolver ipKeyResolver() {
         return exchange -> {
             var xff = exchange.getRequest().getHeaders().getFirst("X-Forwarded-For");
@@ -20,7 +23,10 @@ public class RateLimitConfig {
     public KeyResolver userKeyResolver() {
         return exchange -> exchange.getPrincipal()
                 .map(principal -> {
-                    if (principal.getCredentials() instanceof Jwt jwt) return jwt.getSubject();
+                    if (principal instanceof Authentication authentication
+                            && authentication.getPrincipal() instanceof Jwt jwt) {
+                        return jwt.getSubject();
+                    }
                     return principal.getName();
                 })
                 .defaultIfEmpty("anonymous");
@@ -28,5 +34,6 @@ public class RateLimitConfig {
     @Bean
     public RedisRateLimiter authRateLimiter() { return new RedisRateLimiter(5, 10); }
     @Bean
+    @Primary
     public RedisRateLimiter apiRateLimiter() { return new RedisRateLimiter(50, 100); }
 }

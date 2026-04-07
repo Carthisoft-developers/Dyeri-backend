@@ -1,0 +1,6 @@
+com/dyeri/events/KafkaTopics.class
+com/dyeri/events/OrderPlacedEvent.class
+com/dyeri/events/PaymentConfirmedEvent.class
+com/dyeri/events/PaymentFailedEvent.class
+com/dyeri/events/OrderStatusChangedEvent.class
+com/dyeri/events/SendNotificationCommand.class

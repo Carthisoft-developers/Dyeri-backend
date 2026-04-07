@@ -1,0 +1,10 @@
+/workspace/notification-service/src/main/java/com/dyeri/notification/NotificationServiceApplication.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/config/R2dbcConfig.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/config/RedisConfig.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/consumer/OrderStatusChangedConsumer.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/consumer/PaymentConfirmedConsumer.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/consumer/SendNotificationCommandConsumer.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/dedup/RedisIdempotencyChecker.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/entity/Notification.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/handler/MailHandler.java
+/workspace/notification-service/src/main/java/com/dyeri/notification/repository/NotificationRepository.java
