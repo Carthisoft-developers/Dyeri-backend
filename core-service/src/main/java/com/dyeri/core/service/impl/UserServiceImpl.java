@@ -8,6 +8,7 @@ import com.dyeri.core.domain.entities.User;
 import com.dyeri.core.domain.exceptions.ResourceNotFoundException;
 import com.dyeri.core.domain.repositories.UserRepository;
 import com.dyeri.core.domain.services.UserService;
+import com.dyeri.core.infrastructure.cache.CookCacheAdapter;
 import com.dyeri.core.infrastructure.keycloak.KeycloakAdminClient;
 import com.dyeri.core.infrastructure.storage.FileStorageAdapter;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final KeycloakAdminClient keycloakAdminClient;
     private final FileStorageAdapter fileStorageAdapter;
+    private final CookCacheAdapter cookCacheAdapter;
     private final TransactionalOperator txOperator;
 
     @Override
@@ -72,10 +74,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<String> uploadAvatar(UUID userId, FilePart file) {
-        return fileStorageAdapter.store(file, "avatars")
+        return fileStorageAdapter.storeCompressedImage(file, "avatars")
                 .flatMap(url -> userRepository.findById(userId)
-                        .flatMap(user -> { user.setAvatar(url); return userRepository.save(user); })
+                .flatMap(user -> {
+                    user.setAvatar(url);
+                    return userRepository.save(user)
+                        .flatMap(saved -> cookCacheAdapter.evictCook(userId).thenReturn(saved));
+                })
                         .thenReturn(url));
+    }
+
+    @Override
+    public Mono<byte[]> getAvatar(UUID userId) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("User", userId)))
+                .flatMap(user -> {
+                    if (user.getAvatar() == null || user.getAvatar().isBlank()) {
+                        return Mono.error(new ResourceNotFoundException("Avatar", userId));
+                    }
+                    return fileStorageAdapter.readBytes(user.getAvatar());
+                });
     }
 
     private UserResponse toResponse(User u) {

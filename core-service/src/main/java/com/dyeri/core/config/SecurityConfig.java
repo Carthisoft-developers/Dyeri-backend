@@ -5,6 +5,7 @@ import com.dyeri.core.infrastructure.security.KeycloakJwtConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -24,10 +25,20 @@ public class SecurityConfig {
     private final KeycloakJwtConverter keycloakJwtConverter;
 
     private static final String[] PUBLIC_PATHS = {
-            "/api/v1/dishes/**", "/api/v1/cooks/**", "/api/v1/categories/**",
+            "/api/v1/dishes/**", "/api/v1/categories/**",
             "/api/v1/search/**", "/api/v1/reviews/**",
             "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
             "/actuator/health", "/actuator/info"
+    };
+
+    private static final String[] PUBLIC_COOK_GET_PATHS = {
+            "/api/v1/cooks",
+            "/api/v1/cooks/{id:[0-9a-fA-F\\-]+}",
+            "/api/v1/cooks/{id:[0-9a-fA-F\\-]+}/reviews"
+    };
+
+    private static final String[] PUBLIC_USER_AVATAR_GET_PATHS = {
+            "/api/v1/users/{id:[0-9a-fA-F\\-]+}/avatar"
     };
 
     @Bean
@@ -36,6 +47,9 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeExchange(auth -> auth
+                        .pathMatchers("/api/v1/cooks/me/**").authenticated()
+                        .pathMatchers(HttpMethod.GET, PUBLIC_COOK_GET_PATHS).permitAll()
+                        .pathMatchers(HttpMethod.GET, PUBLIC_USER_AVATAR_GET_PATHS).permitAll()
                         .pathMatchers(PUBLIC_PATHS).permitAll()
                         .anyExchange().authenticated()
                 )

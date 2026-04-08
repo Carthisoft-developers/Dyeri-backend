@@ -1,4 +1,4 @@
-# api-gateway/src/main/resources/application.yml
+﻿# api-gateway/src/main/resources/application.yml
 server:
   port: 8080
 
@@ -17,7 +17,7 @@ spring:
             allowCredentials: true
 
       routes:
-        # ── Auth (rate: 5 req/s per IP, no JWT required) ────────────────────
+        # â”€â”€ Auth (rate: 5 req/s per IP, no JWT required) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         - id: auth-route
           uri: lb://core-service
           predicates:
@@ -34,13 +34,12 @@ spring:
                 name: core-service
                 fallbackUri: forward:/fallback/core
 
-        # ── Core service routes ───────────────────────────────────────────────
+        # â”€â”€ Core service routes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         - id: users-route
           uri: lb://core-service
           predicates:
             - Path=/api/v1/users/**
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 50
@@ -56,7 +55,6 @@ spring:
           predicates:
             - Path=/api/v1/cooks/**
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 50
@@ -72,7 +70,6 @@ spring:
           predicates:
             - Path=/api/v1/dishes/**
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 100
@@ -88,7 +85,6 @@ spring:
           predicates:
             - Path=/api/v1/categories/**
           filters:
-            - TokenRelay=
             - name: CircuitBreaker
               args:
                 name: core-service
@@ -99,7 +95,6 @@ spring:
           predicates:
             - Path=/api/v1/cart/**
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 50
@@ -115,7 +110,6 @@ spring:
           predicates:
             - Path=/api/v1/orders/**
           filters:
-            - TokenRelay=
             - name: CircuitBreaker
               args:
                 name: core-service
@@ -126,7 +120,6 @@ spring:
           predicates:
             - Path=/api/v1/delivery/**
           filters:
-            - TokenRelay=
             - name: CircuitBreaker
               args:
                 name: core-service
@@ -137,7 +130,6 @@ spring:
           predicates:
             - Path=/api/v1/reviews/**
           filters:
-            - TokenRelay=
             - name: CircuitBreaker
               args:
                 name: core-service
@@ -158,19 +150,17 @@ spring:
           predicates:
             - Path=/api/v1/favorites/**,/api/v1/follows/**,/api/v1/addresses/**
           filters:
-            - TokenRelay=
             - name: CircuitBreaker
               args:
                 name: core-service
                 fallbackUri: forward:/fallback/core
 
-        # ── Notification service ─────────────────────────────────────────────
+        # â”€â”€ Notification service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         - id: notifications-route
           uri: lb://notification-service
           predicates:
             - Path=/api/v1/notifications/**
           filters:
-            - TokenRelay=
             - name: RequestRateLimiter
               args:
                 redis-rate-limiter.replenishRate: 30
@@ -181,13 +171,12 @@ spring:
                 name: notification-service
                 fallbackUri: forward:/fallback/notification
 
-        # ── Payment service ──────────────────────────────────────────────────
+        # â”€â”€ Payment service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         - id: payments-route
           uri: lb://payment-service
           predicates:
             - Path=/api/v1/payments/**,/api/v1/payouts/**
           filters:
-            - TokenRelay=
             - name: CircuitBreaker
               args:
                 name: payment-service
@@ -207,7 +196,6 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:dyeri}
           jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8180}/realms/${KEYCLOAK_REALM:dyeri}/protocol/openid-connect/certs
 
   data:
@@ -220,14 +208,14 @@ eureka:
     serviceUrl:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
 
-# ── Load Balancer ─────────────────────────────────────────────────────────────
+# â”€â”€ Load Balancer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 spring.cloud.loadbalancer:
   retry:
     enabled: true
     max-retries-on-same-service-instance: 0
     max-retries-on-next-service-instance: 2
 
-# ── Circuit Breakers ──────────────────────────────────────────────────────────
+# â”€â”€ Circuit Breakers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 resilience4j:
   circuitbreaker:
     instances:
@@ -279,3 +267,4 @@ logging:
   level:
     org.springframework.cloud.gateway: INFO
     com.dyeri.gateway: DEBUG
+

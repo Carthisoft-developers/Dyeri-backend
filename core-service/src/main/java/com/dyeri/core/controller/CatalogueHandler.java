@@ -2,10 +2,13 @@
 package com.dyeri.core.interfaces.rest.handlers;
 
 import com.dyeri.core.application.bean.request.*;
+import com.dyeri.core.domain.exceptions.UnauthorizedException;
 import com.dyeri.core.domain.services.CatalogueService;
 import com.dyeri.core.infrastructure.security.SecurityContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -63,6 +66,24 @@ public class CatalogueHandler {
                 .flatMap(uid -> req.bodyToMono(UpdateDishRequest.class)
                         .flatMap(body -> catalogueService.updateDish(uid, id, body)))
                 .flatMap(r -> ServerResponse.ok().bodyValue(r));
+    }
+
+    public Mono<ServerResponse> uploadDishImage(ServerRequest req) {
+        UUID id = UUID.fromString(req.pathVariable("id"));
+        return SecurityContextUtils.getCurrentUserId()
+                .switchIfEmpty(Mono.error(new UnauthorizedException("Authentication required")))
+                .flatMap(uid -> req.multipartData()
+                        .map(parts -> (FilePart) parts.getFirst("file"))
+                        .flatMap(file -> catalogueService.uploadDishImage(uid, id, file)))
+                .flatMap(r -> ServerResponse.ok().bodyValue(r));
+    }
+
+    public Mono<ServerResponse> getDishImage(ServerRequest req) {
+        UUID id = UUID.fromString(req.pathVariable("id"));
+        return catalogueService.getDishImage(id)
+                .flatMap(bytes -> ServerResponse.ok()
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .bodyValue(bytes));
     }
 
     public Mono<ServerResponse> deleteDish(ServerRequest req) {

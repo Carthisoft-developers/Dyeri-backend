@@ -4,6 +4,7 @@ import com.dyeri.core.domain.entities.Dish;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.query.Param;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,20 +23,27 @@ public interface DishRepository extends R2dbcRepository<Dish, UUID> {
                OR LOWER(description) LIKE LOWER(CONCAT('%', :query, '%')))
         LIMIT :limit OFFSET :offset
         """)
-    Flux<Dish> searchByQuery(String query, int limit, int offset);
+    Flux<Dish> searchByQuery(@Param("query") String query,
+                 @Param("limit") int limit,
+                 @Param("offset") int offset);
 
     @Query("SELECT COUNT(*) FROM dishes WHERE cook_id = :cookId AND available = true")
-    Mono<Long> countAvailableByCookId(UUID cookId);
+    Mono<Long> countAvailableByCookId(@Param("cookId") UUID cookId);
 
     @Query("""
         SELECT * FROM dishes
-        WHERE available = true
+        WHERE (:available IS NULL OR available = :available)
           AND (:cookId IS NULL OR cook_id = :cookId)
           AND (:categoryId IS NULL OR category_id = :categoryId)
           AND (:minPrice IS NULL OR price >= :minPrice)
           AND (:maxPrice IS NULL OR price <= :maxPrice)
         LIMIT :limit OFFSET :offset
         """)
-    Flux<Dish> filterDishes(UUID cookId, UUID categoryId, BigDecimal minPrice,
-                            BigDecimal maxPrice, int limit, int offset);
+    Flux<Dish> filterDishes(@Param("cookId") UUID cookId,
+                            @Param("categoryId") UUID categoryId,
+                            @Param("minPrice") BigDecimal minPrice,
+                            @Param("maxPrice") BigDecimal maxPrice,
+                            @Param("available") Boolean available,
+                            @Param("limit") int limit,
+                            @Param("offset") int offset);
 }

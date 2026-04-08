@@ -2,6 +2,7 @@
 package com.dyeri.core.interfaces.rest.handlers;
 
 import com.dyeri.core.application.bean.request.UpdateCookProfileRequest;
+import com.dyeri.core.domain.exceptions.UnauthorizedException;
 import com.dyeri.core.domain.services.CookService;
 import com.dyeri.core.domain.services.ReviewService;
 import com.dyeri.core.infrastructure.security.SecurityContextUtils;
@@ -40,8 +41,16 @@ public class CookHandler {
                 .flatMap(list -> ServerResponse.ok().bodyValue(list));
     }
 
+    public Mono<ServerResponse> getMyProfile(ServerRequest req) {
+        return SecurityContextUtils.getCurrentUserId()
+                .switchIfEmpty(Mono.error(new UnauthorizedException("Authentication required")))
+                .flatMap(cookService::getCookProfile)
+                .flatMap(r -> ServerResponse.ok().bodyValue(r));
+    }
+
     public Mono<ServerResponse> updateMyProfile(ServerRequest req) {
         return SecurityContextUtils.getCurrentUserId()
+                .switchIfEmpty(Mono.error(new UnauthorizedException("Authentication required")))
                 .flatMap(uid -> req.bodyToMono(UpdateCookProfileRequest.class)
                         .flatMap(body -> cookService.updateCookProfile(uid, body)))
                 .flatMap(r -> ServerResponse.ok().bodyValue(r));
@@ -49,6 +58,7 @@ public class CookHandler {
 
     public Mono<ServerResponse> getDashboard(ServerRequest req) {
         return SecurityContextUtils.getCurrentUserId()
+                .switchIfEmpty(Mono.error(new UnauthorizedException("Authentication required")))
                 .flatMap(cookService::getCookDashboard)
                 .flatMap(r -> ServerResponse.ok().bodyValue(r));
     }

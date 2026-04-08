@@ -5,15 +5,22 @@ import com.dyeri.core.application.bean.request.RegisterRequest;
 import com.dyeri.core.application.bean.request.UpdateProfileRequest;
 import com.dyeri.core.domain.services.UserService;
 import com.dyeri.core.infrastructure.security.SecurityContextUtils;
+import com.dyeri.core.shared.util.ApiConstants;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Component;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -43,7 +50,33 @@ public class UserHandler {
         return SecurityContextUtils.getCurrentUserId()
                 .flatMap(uid -> req.multipartData()
                         .map(parts -> (FilePart) parts.getFirst("file"))
-                        .flatMap(file -> userService.uploadAvatar(uid, file)))
-                .flatMap(url -> ServerResponse.ok().bodyValue(Map.of("avatarUrl", url)));
+                        .flatMap(file -> userService.uploadAvatar(uid, file))
+                        .thenReturn(uid))
+                .flatMap(uid -> ServerResponse.ok().bodyValue(
+                        Map.of("avatarUrl", ApiConstants.USERS_BASE + "/" + uid + "/avatar")));
+    }
+
+    public Mono<ServerResponse> getAvatarById(ServerRequest req) {
+        UUID userId = UUID.fromString(req.pathVariable("id"));
+        final String ifNoneMatch = req.headers().firstHeader(HttpHeaders.IF_NONE_MATCH);
+
+        return userService.getAvatar(userId)
+                .flatMap(bytes -> {
+                    final String eTag = '"' + DigestUtils.md5DigestAsHex(bytes) + '"';
+                    final CacheControl cacheControl = CacheControl.maxAge(Duration.ofDays(7)).cachePublic();
+
+                    if (ifNoneMatch != null && ifNoneMatch.contains(eTag)) {
+                        return ServerResponse.status(HttpStatus.NOT_MODIFIED)
+                                .eTag(eTag)
+                                .cacheControl(cacheControl)
+                                .build();
+                    }
+
+                    return ServerResponse.ok()
+                            .contentType(MediaType.IMAGE_JPEG)
+                            .eTag(eTag)
+                            .cacheControl(cacheControl)
+                            .bodyValue(bytes);
+                });
     }
 }

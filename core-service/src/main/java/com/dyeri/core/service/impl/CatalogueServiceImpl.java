@@ -8,10 +8,12 @@ import com.dyeri.core.domain.exceptions.*;
 import com.dyeri.core.domain.repositories.*;
 import com.dyeri.core.domain.services.CatalogueService;
 import com.dyeri.core.infrastructure.cache.DishCacheAdapter;
+import com.dyeri.core.infrastructure.storage.FileStorageAdapter;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
@@ -30,6 +32,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     private final FoodCategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final DishCacheAdapter dishCacheAdapter;
+    private final FileStorageAdapter fileStorageAdapter;
     private final TransactionalOperator txOperator;
     private final ObjectMapper objectMapper;
 
@@ -50,7 +53,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public Flux<DishResponse> getDishes(DishFilterRequest filter, int page, int size) {
         return dishRepository.filterDishes(
                         filter.cookId(), filter.categoryId(),
-                        filter.minPrice(), filter.maxPrice(),
+                filter.minPrice(), filter.maxPrice(), filter.available(),
                         size, page * size)
                 .flatMap(this::enrichDish);
     }
@@ -74,7 +77,6 @@ public class CatalogueServiceImpl implements CatalogueService {
                         .switchIfEmpty(Mono.error(new ResourceNotFoundException("Category", request.categoryId()))))
                 .flatMap(category -> {
                     Dish dish = Dish.builder()
-                            .id(UUID.randomUUID())
                             .cookId(cookId)
                             .categoryId(category.getId())
                             .name(request.name())
@@ -122,6 +124,37 @@ public class CatalogueServiceImpl implements CatalogueService {
     }
 
     @Override
+    public Mono<DishResponse> uploadDishImage(UUID cookId, UUID dishId, FilePart file) {
+        return dishRepository.findById(dishId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Dish", dishId)))
+                .flatMap(dish -> {
+                    if (!dish.getCookId().equals(cookId)) {
+                        return Mono.error(new UnauthorizedException("You do not own this dish"));
+                    }
+                    return fileStorageAdapter.storeCompressedImage(file, "dishes")
+                            .flatMap(storedUrl -> {
+                                dish.setImage(storedUrl);
+                                return dishRepository.save(dish);
+                            });
+                })
+                .flatMap(d -> dishCacheAdapter.evictDish(d.getId()).thenReturn(d))
+                .flatMap(this::enrichDish)
+                .as(txOperator::transactional);
+    }
+
+    @Override
+    public Mono<byte[]> getDishImage(UUID dishId) {
+        return dishRepository.findById(dishId)
+                .switchIfEmpty(Mono.error(new ResourceNotFoundException("Dish", dishId)))
+                .flatMap(dish -> {
+                    if (dish.getImage() == null || dish.getImage().isBlank()) {
+                        return Mono.error(new ResourceNotFoundException("Dish image", dishId));
+                    }
+                    return fileStorageAdapter.readBytes(dish.getImage());
+                });
+    }
+
+    @Override
     public Mono<Void> deleteDish(UUID cookId, UUID dishId) {
         return dishRepository.findById(dishId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Dish", dishId)))
@@ -162,7 +195,10 @@ public class CatalogueServiceImpl implements CatalogueService {
                         Boolean.TRUE.equals(u.getAvailable()), 0.0));
         return Mono.zip(categoryName, cook).map(t ->
                 new DishResponse(dish.getId(), dish.getName(), dish.getDescription(),
-                        dish.getImage(), dish.getPrice(),
+                dish.getImage() != null && !dish.getImage().isBlank()
+                    ? "/api/v1/dishes/" + dish.getId() + "/image"
+                    : "",
+                dish.getPrice(),
                         dish.getRating() != null ? dish.getRating() : 0.0,
                         dish.getReviewCount() != null ? dish.getReviewCount() : 0,
                         dish.getPortions() != null ? dish.getPortions() : 1,

@@ -16,4 +16,6 @@ public interface UserService {
     Mono<UserResponse> updateProfile(UUID userId, UpdateProfileRequest request);
     /** Upload avatar and return URL. */
     Mono<String> uploadAvatar(UUID userId, FilePart file);
+    /** Read avatar bytes for a user id. */
+    Mono<byte[]> getAvatar(UUID userId);
 }

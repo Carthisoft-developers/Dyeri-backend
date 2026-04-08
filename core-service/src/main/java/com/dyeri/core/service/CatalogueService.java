@@ -1,6 +1,7 @@
 package com.dyeri.core.domain.services;
 import com.dyeri.core.application.bean.request.*;
 import com.dyeri.core.application.bean.response.*;
+import org.springframework.http.codec.multipart.FilePart;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import java.util.UUID;
@@ -13,6 +14,8 @@ public interface CatalogueService {
     Mono<DishResponse> getDish(UUID dishId);
     Mono<DishResponse> createDish(UUID cookId, CreateDishRequest request);
     Mono<DishResponse> updateDish(UUID cookId, UUID dishId, UpdateDishRequest request);
+    Mono<DishResponse> uploadDishImage(UUID cookId, UUID dishId, FilePart file);
+    Mono<byte[]> getDishImage(UUID dishId);
     Mono<Void> deleteDish(UUID cookId, UUID dishId);
     Mono<DishResponse> toggleAvailability(UUID cookId, UUID dishId);
 }

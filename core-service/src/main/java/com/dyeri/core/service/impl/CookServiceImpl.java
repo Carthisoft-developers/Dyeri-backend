@@ -40,6 +40,10 @@ public class CookServiceImpl implements CookService {
                                 .map(u -> new CookResponse(u.getId(), u.getName(), u.getAvatar(),
                                         u.getBanner(), u.getBio(), u.getTitle(),
                                         fromJson(u.getSpecialties()),
+                                        u.getPhone(),
+                                        u.getAddress(),
+                                        u.getLatitude(),
+                                        u.getLongitude(),
                                         u.getRating() != null ? u.getRating() : 0.0,
                                         u.getReviewCount() != null ? u.getReviewCount() : 0,
                                         Boolean.TRUE.equals(u.getAvailable()),
@@ -57,20 +61,29 @@ public class CookServiceImpl implements CookService {
         return userRepository.findById(cookId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Cook", cookId)))
                 .flatMap(user -> {
+                                        if (request.name() != null) user.setName(request.name());
+                                        if (request.phone() != null) user.setPhone(request.phone());
                     if (request.bio() != null) user.setBio(request.bio());
                     if (request.title() != null) user.setTitle(request.title());
                     if (request.specialties() != null) user.setSpecialties(toJson(request.specialties()));
                     if (request.address() != null) user.setAddress(request.address());
-                    if (request.latitude() != 0) user.setLatitude(request.latitude());
-                    if (request.longitude() != 0) user.setLongitude(request.longitude());
-                    if (request.deliveryRadius() > 0) user.setDeliveryRadius(request.deliveryRadius());
+                                        if (request.latitude() != null) user.setLatitude(request.latitude());
+                                        if (request.longitude() != null) user.setLongitude(request.longitude());
+                                        if (request.deliveryRadius() != null) user.setDeliveryRadius(request.deliveryRadius());
                     if (request.minimumOrder() != null) user.setMinimumOrder(request.minimumOrder());
+                                        if (request.available() != null) user.setAvailable(request.available());
+                                        if (request.acceptsDelivery() != null) user.setAcceptsDelivery(request.acceptsDelivery());
+                                        if (request.acceptsPickup() != null) user.setAcceptsPickup(request.acceptsPickup());
                     return userRepository.save(user);
                 })
                 .flatMap(u -> cookCacheAdapter.evictCook(cookId).thenReturn(u))
                 .map(u -> new CookResponse(u.getId(), u.getName(), u.getAvatar(),
                         u.getBanner(), u.getBio(), u.getTitle(),
                         fromJson(u.getSpecialties()),
+                                                u.getPhone(),
+                                                u.getAddress(),
+                                                u.getLatitude(),
+                                                u.getLongitude(),
                         u.getRating() != null ? u.getRating() : 0.0,
                         u.getReviewCount() != null ? u.getReviewCount() : 0,
                         Boolean.TRUE.equals(u.getAvailable()),

@@ -39,7 +39,6 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${keycloak.auth-server-url:http://localhost:8180}/realms/${keycloak.realm:dyeri}
           jwk-set-uri: ${keycloak.auth-server-url:http://localhost:8180}/realms/${keycloak.realm:dyeri}/protocol/openid-connect/certs
 
 keycloak:
