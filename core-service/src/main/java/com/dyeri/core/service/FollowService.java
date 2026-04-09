@@ -6,6 +6,8 @@ import java.util.UUID;
 
 /** Inbound port for client-cook follow relationships. */
 public interface FollowService {
+    Mono<Void> follow(UUID clientId, UUID cookId);
+    Mono<Void> unfollow(UUID clientId, UUID cookId);
     Mono<Void> toggleFollow(UUID clientId, UUID cookId);
     Flux<CookSummaryResponse> getFollowedCooks(UUID clientId);
 }

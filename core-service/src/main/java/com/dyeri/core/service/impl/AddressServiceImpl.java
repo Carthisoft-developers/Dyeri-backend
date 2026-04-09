@@ -8,6 +8,7 @@ import com.dyeri.core.domain.exceptions.*;
 import com.dyeri.core.domain.repositories.SavedAddressRepository;
 import com.dyeri.core.domain.services.AddressService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class AddressServiceImpl implements AddressService {
 
     private final SavedAddressRepository addressRepository;
+    private final R2dbcEntityTemplate r2dbcEntityTemplate;
     private final TransactionalOperator txOperator;
 
     @Override
@@ -32,8 +34,9 @@ public class AddressServiceImpl implements AddressService {
     public Mono<AddressResponse> saveAddress(UUID clientId, SaveAddressRequest request) {
         Mono<Void> clearDefault = request.isDefault()
                 ? addressRepository.clearDefaultsByClientId(clientId) : Mono.empty();
-        return clearDefault.then(addressRepository.save(SavedAddress.builder()
-                        .id(UUID.randomUUID()).clientId(clientId)
+        return clearDefault.then(r2dbcEntityTemplate.insert(SavedAddress.class).using(SavedAddress.builder()
+                .id(UUID.randomUUID())
+                .clientId(clientId)
                         .label(request.label()).address(request.address())
                         .additionalInfo(request.additionalInfo())
                         .latitude(request.latitude()).longitude(request.longitude())

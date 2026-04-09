@@ -3,5 +3,5 @@ import java.math.BigDecimal;
 import java.util.UUID;
 public record DishFilterRequest(
         UUID cookId, UUID categoryId, BigDecimal minPrice, BigDecimal maxPrice,
-        Boolean available, String query
+        Boolean available, Boolean cookAvailable, String query
 ) {}

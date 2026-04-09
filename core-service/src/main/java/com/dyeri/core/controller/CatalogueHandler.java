@@ -43,6 +43,7 @@ public class CatalogueHandler {
                 req.queryParam("minPrice").map(BigDecimal::new).orElse(null),
                 req.queryParam("maxPrice").map(BigDecimal::new).orElse(null),
                 req.queryParam("available").map(Boolean::parseBoolean).orElse(null),
+                req.queryParam("cookAvailable").map(Boolean::parseBoolean).orElse(null),
                 req.queryParam("query").orElse(null));
         return catalogueService.getDishes(filter, page, size).collectList()
                 .flatMap(list -> ServerResponse.ok().bodyValue(list));

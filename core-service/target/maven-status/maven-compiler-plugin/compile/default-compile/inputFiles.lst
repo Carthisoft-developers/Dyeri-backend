@@ -16,9 +16,11 @@
 /workspace/core-service/src/main/java/com/dyeri/core/config/RedisConfig.java
 /workspace/core-service/src/main/java/com/dyeri/core/config/SecurityConfig.java
 /workspace/core-service/src/main/java/com/dyeri/core/config/WebSocketConfig.java
+/workspace/core-service/src/main/java/com/dyeri/core/controller/AddressHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/controller/CartHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/controller/CatalogueHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/controller/CookHandler.java
+/workspace/core-service/src/main/java/com/dyeri/core/controller/DeliveryHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/controller/OrderHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/controller/OrderTrackingHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/controller/UserHandler.java
@@ -77,6 +79,7 @@
 /workspace/core-service/src/main/java/com/dyeri/core/exception/GlobalErrorWebExceptionHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/exception/ResourceNotFoundException.java
 /workspace/core-service/src/main/java/com/dyeri/core/exception/UnauthorizedException.java
+/workspace/core-service/src/main/java/com/dyeri/core/interfaces/rest/handlers/SocialHandler.java
 /workspace/core-service/src/main/java/com/dyeri/core/repository/CartItemRepository.java
 /workspace/core-service/src/main/java/com/dyeri/core/repository/CartRepository.java
 /workspace/core-service/src/main/java/com/dyeri/core/repository/DeliveryAssignmentRepository.java

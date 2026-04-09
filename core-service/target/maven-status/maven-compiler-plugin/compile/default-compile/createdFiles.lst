@@ -16,6 +16,7 @@ com/dyeri/core/application/services/FavoriteServiceImpl.class
 com/dyeri/core/application/bean/response/EarningsResponse.class
 com/dyeri/core/domain/entities/Favorite.class
 com/dyeri/core/application/services/SearchServiceImpl.class
+com/dyeri/core/interfaces/rest/handlers/SocialHandler.class
 com/dyeri/core/application/bean/request/UpdateCookProfileRequest.class
 com/dyeri/core/domain/entities/Review.class
 com/dyeri/core/application/bean/request/SaveAddressRequest.class
@@ -28,6 +29,7 @@ com/dyeri/core/application/services/CookServiceImpl$1.class
 com/dyeri/core/domain/entities/CartItem.class
 com/dyeri/core/application/services/UserServiceImpl.class
 com/dyeri/core/domain/repositories/SavedAddressRepository.class
+com/dyeri/core/interfaces/rest/handlers/AddressHandler.class
 com/dyeri/core/domain/exceptions/ConflictException.class
 com/dyeri/core/domain/repositories/CartRepository.class
 com/dyeri/core/domain/services/FollowService.class
@@ -92,6 +94,7 @@ com/dyeri/core/application/bean/request/UpdateProfileRequest.class
 com/dyeri/core/application/bean/response/DashboardResponse.class
 com/dyeri/core/domain/entities/SavedAddress$SavedAddressBuilder.class
 com/dyeri/core/application/bean/response/CookSummaryResponse.class
+com/dyeri/core/interfaces/rest/handlers/DeliveryHandler.class
 com/dyeri/core/domain/entities/Follow.class
 com/dyeri/core/application/bean/request/UpdateDishRequest.class
 com/dyeri/core/domain/repositories/ReviewRepository.class

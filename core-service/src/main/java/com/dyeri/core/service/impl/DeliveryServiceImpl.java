@@ -42,6 +42,14 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
+    public Flux<OrderResponse> getHistory(UUID driverId, int page, int size) {
+        return orderRepository.findByDriverIdOrderByCreatedAtDesc(driverId)
+                .skip((long) page * size)
+                .take(size)
+                .flatMap(this::buildOrderResponse);
+    }
+
+    @Override
     public Mono<OrderResponse> acceptDelivery(UUID driverId, UUID orderId) {
         return orderRepository.findById(orderId)
                 .switchIfEmpty(Mono.error(new ResourceNotFoundException("Order", orderId)))
@@ -56,7 +64,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .flatMap(order -> assignmentRepository.save(DeliveryAssignment.builder()
                         .id(UUID.randomUUID()).orderId(order.getId())
                         .driverId(driverId).assignedAt(Instant.now()).build()).thenReturn(order))
-                .flatMap(order -> orderService.updateStatus(driverId, "DELIVERY", orderId, "ASSIGNED"))
+                .flatMap(order -> orderService.updateStatus(driverId, "DELIVERY", orderId, "OUT_FOR_DELIVERY"))
                 .as(txOperator::transactional);
     }
 

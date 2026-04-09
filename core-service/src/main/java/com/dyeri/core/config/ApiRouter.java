@@ -22,6 +22,9 @@ public class ApiRouter {
     private final CatalogueHandler catalogueHandler;
     private final CartHandler cartHandler;
     private final OrderHandler orderHandler;
+    private final AddressHandler addressHandler;
+    private final DeliveryHandler deliveryHandler;
+    private final SocialHandler socialHandler;
 
     @Bean
     public RouterFunction<ServerResponse> userRoutes() {
@@ -36,6 +39,7 @@ public class ApiRouter {
     public RouterFunction<ServerResponse> cookRoutes() {
         return route(GET(ApiConstants.COOKS_BASE), cookHandler::getNearbyCooks)
                 .andRoute(GET(ApiConstants.COOKS_BASE + "/me"), cookHandler::getMyProfile)
+                .andRoute(GET(ApiConstants.COOKS_BASE + "/me/orders"), cookHandler::getMyOrders)
                 .andRoute(GET(ApiConstants.COOKS_BASE + "/me/dashboard"), cookHandler::getDashboard)
                 .andRoute(GET(ApiConstants.COOKS_BASE + "/{id}"), cookHandler::getCook)
                 .andRoute(GET(ApiConstants.COOKS_BASE + "/{id}/reviews"), cookHandler::getCookReviews)
@@ -72,5 +76,45 @@ public class ApiRouter {
                 .andRoute(GET(ApiConstants.ORDERS_BASE + "/{id}"), orderHandler::getOrder)
                 .andRoute(PATCH(ApiConstants.ORDERS_BASE + "/{id}/status"), orderHandler::updateStatus)
                 .andRoute(DELETE(ApiConstants.ORDERS_BASE + "/{id}/cancel"), orderHandler::cancelOrder);
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> addressRoutes() {
+        return route(GET(ApiConstants.USERS_BASE + "/me/addresses"), addressHandler::getMyAddresses)
+                .andRoute(POST(ApiConstants.USERS_BASE + "/me/addresses"), addressHandler::saveAddress)
+                .andRoute(PATCH(ApiConstants.USERS_BASE + "/me/addresses/{id}"), addressHandler::updateAddress)
+                .andRoute(DELETE(ApiConstants.USERS_BASE + "/me/addresses/{id}"), addressHandler::deleteAddress)
+                .andRoute(POST(ApiConstants.USERS_BASE + "/me/addresses/{id}/default"), addressHandler::setDefault)
+                .andRoute(GET(ApiConstants.ADDRESSES_BASE), addressHandler::getMyAddresses)
+                .andRoute(POST(ApiConstants.ADDRESSES_BASE), addressHandler::saveAddress)
+                .andRoute(PATCH(ApiConstants.ADDRESSES_BASE + "/{id}"), addressHandler::updateAddress)
+                .andRoute(DELETE(ApiConstants.ADDRESSES_BASE + "/{id}"), addressHandler::deleteAddress)
+                .andRoute(POST(ApiConstants.ADDRESSES_BASE + "/{id}/default"), addressHandler::setDefault);
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> deliveryRoutes() {
+        return route(GET(ApiConstants.DELIVERY_BASE + "/available"), deliveryHandler::getAvailableOrders)
+                .andRoute(GET(ApiConstants.DELIVERY_BASE + "/history"), deliveryHandler::getHistory)
+                .andRoute(GET(ApiConstants.DELIVERY_BASE + "/earnings"), deliveryHandler::getEarnings)
+                .andRoute(POST(ApiConstants.DELIVERY_BASE + "/{orderId}/accept"), deliveryHandler::acceptDelivery)
+                .andRoute(POST(ApiConstants.DELIVERY_BASE + "/{orderId}/complete"), deliveryHandler::completeDelivery)
+                .andRoute(POST(ApiConstants.DELIVERY_BASE + "/{orderId}/location"), deliveryHandler::updateLocation);
+    }
+
+    @Bean
+    public RouterFunction<ServerResponse> socialRoutes() {
+        return route(GET(ApiConstants.USERS_BASE + "/me/favorites"), socialHandler::getMyFavorites)
+                .andRoute(POST(ApiConstants.USERS_BASE + "/me/favorites/{dishId}"), socialHandler::addFavorite)
+                .andRoute(DELETE(ApiConstants.USERS_BASE + "/me/favorites/{dishId}"), socialHandler::removeFavorite)
+                .andRoute(GET(ApiConstants.FAVORITES_BASE), socialHandler::getMyFavorites)
+                .andRoute(POST(ApiConstants.FAVORITES_BASE + "/{dishId}"), socialHandler::addFavorite)
+                .andRoute(DELETE(ApiConstants.FAVORITES_BASE + "/{dishId}"), socialHandler::removeFavorite)
+                .andRoute(GET(ApiConstants.USERS_BASE + "/me/following"), socialHandler::getMyFollowing)
+                .andRoute(POST(ApiConstants.USERS_BASE + "/me/following/{cookId}"), socialHandler::followCook)
+                .andRoute(DELETE(ApiConstants.USERS_BASE + "/me/following/{cookId}"), socialHandler::unfollowCook)
+                .andRoute(GET(ApiConstants.FOLLOWS_BASE), socialHandler::getMyFollowing)
+                .andRoute(POST(ApiConstants.FOLLOWS_BASE + "/{cookId}"), socialHandler::followCook)
+                .andRoute(DELETE(ApiConstants.FOLLOWS_BASE + "/{cookId}"), socialHandler::unfollowCook);
     }
 }

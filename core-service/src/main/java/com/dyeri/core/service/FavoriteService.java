@@ -6,6 +6,8 @@ import java.util.UUID;
 
 /** Inbound port for client dish favourites. */
 public interface FavoriteService {
+    Mono<Void> addFavorite(UUID clientId, UUID dishId);
+    Mono<Void> removeFavorite(UUID clientId, UUID dishId);
     Mono<Void> toggleFavorite(UUID clientId, UUID dishId);
     Flux<DishSummaryResponse> getFavorites(UUID clientId);
 }

@@ -130,10 +130,10 @@ class ReactiveOrderServiceTest {
 
     @Test
     void isTransitionAllowed_validTransitions() {
-        assert orderService.isTransitionAllowed("PENDING", "ACCEPTED", "COOK");
-        assert orderService.isTransitionAllowed("ACCEPTED", "PREPARING", "COOK");
+        assert orderService.isTransitionAllowed("PENDING", "PREPARING", "COOK");
         assert orderService.isTransitionAllowed("PREPARING", "READY", "COOK");
-        assert orderService.isTransitionAllowed("READY", "ASSIGNED", "DELIVERY");
+        assert orderService.isTransitionAllowed("READY", "OUT_FOR_DELIVERY", "DELIVERY");
+        assert orderService.isTransitionAllowed("OUT_FOR_DELIVERY", "DELIVERED", "DELIVERY");
         assert orderService.isTransitionAllowed("PENDING", "CANCELLED", "CLIENT");
     }
 
@@ -142,6 +142,6 @@ class ReactiveOrderServiceTest {
         assert !orderService.isTransitionAllowed("DELIVERED", "PENDING", "ADMIN");
         assert !orderService.isTransitionAllowed("PREPARING", "DELIVERED", "COOK");
         assert !orderService.isTransitionAllowed("READY", "PREPARING", "COOK");
-        assert !orderService.isTransitionAllowed("PENDING", "ACCEPTED", "CLIENT");
+        assert !orderService.isTransitionAllowed("PENDING", "OUT_FOR_DELIVERY", "DELIVERY");
     }
 }

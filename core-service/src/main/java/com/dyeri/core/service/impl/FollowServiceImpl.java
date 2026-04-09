@@ -20,6 +20,23 @@ public class FollowServiceImpl implements FollowService {
     private final FollowRepository followRepository;
     private final UserRepository userRepository;
 
+        @Override
+        public Mono<Void> follow(UUID clientId, UUID cookId) {
+                return followRepository.existsByClientIdAndCookId(clientId, cookId)
+                                .flatMap(exists -> exists
+                                                ? Mono.empty()
+                                                : followRepository.save(Follow.builder()
+                                                                .clientId(clientId)
+                                                                .cookId(cookId)
+                                                                .followedAt(Instant.now())
+                                                                .build()).then());
+        }
+
+        @Override
+        public Mono<Void> unfollow(UUID clientId, UUID cookId) {
+                return followRepository.deleteByClientIdAndCookId(clientId, cookId);
+        }
+
     @Override
     public Mono<Void> toggleFollow(UUID clientId, UUID cookId) {
         return followRepository.existsByClientIdAndCookId(clientId, cookId)

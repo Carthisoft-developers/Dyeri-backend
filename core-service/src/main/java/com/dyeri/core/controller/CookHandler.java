@@ -4,6 +4,7 @@ package com.dyeri.core.interfaces.rest.handlers;
 import com.dyeri.core.application.bean.request.UpdateCookProfileRequest;
 import com.dyeri.core.domain.exceptions.UnauthorizedException;
 import com.dyeri.core.domain.services.CookService;
+import com.dyeri.core.domain.services.OrderService;
 import com.dyeri.core.domain.services.ReviewService;
 import com.dyeri.core.infrastructure.security.SecurityContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class CookHandler {
     private final CookService cookService;
     private final ReviewService reviewService;
+    private final OrderService orderService;
 
     public Mono<ServerResponse> getNearbyCooks(ServerRequest req) {
         double lat = Double.parseDouble(req.queryParam("lat").orElse("0"));
@@ -46,6 +48,17 @@ public class CookHandler {
                 .switchIfEmpty(Mono.error(new UnauthorizedException("Authentication required")))
                 .flatMap(cookService::getCookProfile)
                 .flatMap(r -> ServerResponse.ok().bodyValue(r));
+    }
+
+    public Mono<ServerResponse> getMyOrders(ServerRequest req) {
+        int page = Integer.parseInt(req.queryParam("page").orElse("0"));
+        int size = Integer.parseInt(req.queryParam("size").orElse("100"));
+        var statuses = req.queryParams().getOrDefault("status", java.util.List.of());
+        return SecurityContextUtils.getCurrentUserId()
+                .switchIfEmpty(Mono.error(new UnauthorizedException("Authentication required")))
+                .flatMapMany(uid -> orderService.getCookOrders(uid, statuses, page, size))
+                .collectList()
+                .flatMap(list -> ServerResponse.ok().bodyValue(list));
     }
 
     public Mono<ServerResponse> updateMyProfile(ServerRequest req) {

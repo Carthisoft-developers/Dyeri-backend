@@ -53,7 +53,7 @@ public class CatalogueServiceImpl implements CatalogueService {
     public Flux<DishResponse> getDishes(DishFilterRequest filter, int page, int size) {
         return dishRepository.filterDishes(
                         filter.cookId(), filter.categoryId(),
-                filter.minPrice(), filter.maxPrice(), filter.available(),
+            filter.minPrice(), filter.maxPrice(), filter.available(), filter.cookAvailable(),
                         size, page * size)
                 .flatMap(this::enrichDish);
     }

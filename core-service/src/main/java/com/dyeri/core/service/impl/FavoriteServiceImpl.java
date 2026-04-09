@@ -22,6 +22,23 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final DishRepository dishRepository;
     private final UserRepository userRepository;
 
+        @Override
+        public Mono<Void> addFavorite(UUID clientId, UUID dishId) {
+                return favoriteRepository.existsByClientIdAndDishId(clientId, dishId)
+                                .flatMap(exists -> exists
+                                                ? Mono.empty()
+                                                : favoriteRepository.save(Favorite.builder()
+                                                                .clientId(clientId)
+                                                                .dishId(dishId)
+                                                                .savedAt(Instant.now())
+                                                                .build()).then());
+        }
+
+        @Override
+        public Mono<Void> removeFavorite(UUID clientId, UUID dishId) {
+                return favoriteRepository.deleteByClientIdAndDishId(clientId, dishId);
+        }
+
     @Override
     public Mono<Void> toggleFavorite(UUID clientId, UUID dishId) {
         return favoriteRepository.existsByClientIdAndDishId(clientId, dishId)

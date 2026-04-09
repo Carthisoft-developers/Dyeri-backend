@@ -10,6 +10,7 @@ import com.dyeri.core.domain.services.CartService;
 import com.dyeri.core.infrastructure.cache.CartCacheAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Mono;
@@ -28,6 +29,7 @@ public class CartServiceImpl implements CartService {
     private final CartItemRepository cartItemRepository;
     private final DishRepository dishRepository;
     private final CartCacheAdapter cartCacheAdapter;
+        private final R2dbcEntityTemplate r2dbcEntityTemplate;
     private final TransactionalOperator txOperator;
 
     private static final BigDecimal SERVICE_FEE_RATE = new BigDecimal("0.05");
@@ -61,12 +63,17 @@ public class CartServiceImpl implements CartService {
                                 if (cart.getCookId() == null) cart.setCookId(dish.getCookId());
                                 return Mono.just(cart);
                             })
-                            .switchIfEmpty(Mono.fromCallable(() -> Cart.builder()
-                                    .id(UUID.randomUUID()).clientId(clientId)
-                                    .cookId(dish.getCookId())
-                                    .subtotal(BigDecimal.ZERO).serviceFee(BigDecimal.ZERO)
-                                    .deliveryFee(BigDecimal.ZERO).total(BigDecimal.ZERO)
-                                    .updatedAt(Instant.now()).build()))
+                            .switchIfEmpty(r2dbcEntityTemplate.insert(Cart.class).using(
+                                    Cart.builder()
+                                            .id(UUID.randomUUID())
+                                            .clientId(clientId)
+                                            .cookId(dish.getCookId())
+                                            .subtotal(BigDecimal.ZERO)
+                                            .serviceFee(BigDecimal.ZERO)
+                                            .deliveryFee(BigDecimal.ZERO)
+                                            .total(BigDecimal.ZERO)
+                                            .updatedAt(Instant.now())
+                                            .build()))
                             .flatMap(cartRepository::save)
                             .flatMap(cart ->
                                     cartItemRepository.findByCartId(cart.getId())
@@ -76,10 +83,14 @@ public class CartServiceImpl implements CartService {
                                                 existing.setQuantity(existing.getQuantity() + request.quantity());
                                                 return cartItemRepository.save(existing);
                                             })
-                                            .switchIfEmpty(cartItemRepository.save(CartItem.builder()
-                                                    .id(UUID.randomUUID()).cartId(cart.getId())
-                                                    .dishId(dish.getId()).quantity(request.quantity())
-                                                    .price(dish.getPrice()).build()))
+                                            .switchIfEmpty(r2dbcEntityTemplate.insert(CartItem.class).using(
+                                                    CartItem.builder()
+                                                            .id(UUID.randomUUID())
+                                                            .cartId(cart.getId())
+                                                            .dishId(dish.getId())
+                                                            .quantity(request.quantity())
+                                                            .price(dish.getPrice())
+                                                            .build()))
                                             .thenReturn(cart)
                             );
                 })

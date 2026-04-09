@@ -17,10 +17,13 @@ public interface DishRepository extends R2dbcRepository<Dish, UUID> {
     Mono<Long> countByCookId(UUID cookId);
 
     @Query("""
-        SELECT * FROM dishes
-        WHERE available = true
-          AND (LOWER(name) LIKE LOWER(CONCAT('%', :query, '%'))
-               OR LOWER(description) LIKE LOWER(CONCAT('%', :query, '%')))
+        SELECT d.*
+        FROM dishes d
+        JOIN users u ON u.id = d.cook_id
+        WHERE d.available = true
+          AND u.is_available = true
+          AND (LOWER(d.name) LIKE LOWER(CONCAT('%', :query, '%'))
+               OR LOWER(d.description) LIKE LOWER(CONCAT('%', :query, '%')))
         LIMIT :limit OFFSET :offset
         """)
     Flux<Dish> searchByQuery(@Param("query") String query,
@@ -31,12 +34,15 @@ public interface DishRepository extends R2dbcRepository<Dish, UUID> {
     Mono<Long> countAvailableByCookId(@Param("cookId") UUID cookId);
 
     @Query("""
-        SELECT * FROM dishes
-        WHERE (:available IS NULL OR available = :available)
-          AND (:cookId IS NULL OR cook_id = :cookId)
-          AND (:categoryId IS NULL OR category_id = :categoryId)
-          AND (:minPrice IS NULL OR price >= :minPrice)
-          AND (:maxPrice IS NULL OR price <= :maxPrice)
+        SELECT d.*
+        FROM dishes d
+        JOIN users u ON u.id = d.cook_id
+        WHERE (:available IS NULL OR d.available = :available)
+          AND (:cookAvailable IS NULL OR u.is_available = :cookAvailable)
+          AND (:cookId IS NULL OR d.cook_id = :cookId)
+          AND (:categoryId IS NULL OR d.category_id = :categoryId)
+          AND (:minPrice IS NULL OR d.price >= :minPrice)
+          AND (:maxPrice IS NULL OR d.price <= :maxPrice)
         LIMIT :limit OFFSET :offset
         """)
     Flux<Dish> filterDishes(@Param("cookId") UUID cookId,
@@ -44,6 +50,7 @@ public interface DishRepository extends R2dbcRepository<Dish, UUID> {
                             @Param("minPrice") BigDecimal minPrice,
                             @Param("maxPrice") BigDecimal maxPrice,
                             @Param("available") Boolean available,
+                            @Param("cookAvailable") Boolean cookAvailable,
                             @Param("limit") int limit,
                             @Param("offset") int offset);
 }

@@ -11,6 +11,7 @@ import java.util.UUID;
 public interface OrderRepository extends R2dbcRepository<Order, UUID> {
     Flux<Order> findByClientIdOrderByCreatedAtDesc(UUID clientId);
     Flux<Order> findByCookIdOrderByCreatedAtDesc(UUID cookId);
+    Flux<Order> findByDriverIdOrderByCreatedAtDesc(UUID driverId);
     Flux<Order> findByStatusAndDriverIdIsNull(String status);
 
     @Query("SELECT * FROM orders WHERE cook_id = :cookId AND status = ANY(:statuses::text[]) ORDER BY created_at DESC")
