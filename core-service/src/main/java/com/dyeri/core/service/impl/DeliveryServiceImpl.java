@@ -62,7 +62,7 @@ public class DeliveryServiceImpl implements DeliveryService {
                     return orderRepository.save(order);
                 })
                 .flatMap(order -> assignmentRepository.save(DeliveryAssignment.builder()
-                        .id(UUID.randomUUID()).orderId(order.getId())
+                        .orderId(order.getId())
                         .driverId(driverId).assignedAt(Instant.now()).build()).thenReturn(order))
                 .flatMap(order -> orderService.updateStatus(driverId, "DELIVERY", orderId, "OUT_FOR_DELIVERY"))
                 .as(txOperator::transactional);

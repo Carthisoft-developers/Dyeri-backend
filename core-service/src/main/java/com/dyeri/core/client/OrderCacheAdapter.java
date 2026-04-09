@@ -19,7 +19,10 @@ public class OrderCacheAdapter {
     private static final Duration TTL = Duration.ofMinutes(5);
 
     public Mono<OrderResponse> getCachedOrder(UUID orderId) {
-        return redis.opsForValue().get(ApiConstants.CACHE_ORDER + orderId).cast(OrderResponse.class);
+        String key = ApiConstants.CACHE_ORDER + orderId;
+        return redis.opsForValue().get(key)
+                .cast(OrderResponse.class)
+                .onErrorResume(e -> evictOrder(orderId).then(Mono.empty()));
     }
 
     public Mono<Boolean> cacheOrder(UUID orderId, OrderResponse response) {
